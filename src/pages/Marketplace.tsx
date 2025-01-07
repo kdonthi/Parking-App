@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import Map from '@/components/Map';
+import { useParkingSpotsStore } from '../store/parkingSpots';
 
 interface ParkingSpot {
   id: number;
@@ -14,9 +15,9 @@ interface ParkingSpot {
 }
 
 const Marketplace = () => {
-  const [spots, setSpots] = useState<ParkingSpot[]>([]);
   const [price, setPrice] = useState<number>(10);
   const { toast } = useToast();
+  const { spots, addSpot } = useParkingSpotsStore();
 
   const getLocationName = async (lat: number, lng: number) => {
     try {
@@ -60,7 +61,7 @@ const Marketplace = () => {
           coordinates
         };
 
-        setSpots([...spots, newSpot]);
+        addSpot(newSpot);
         toast({
           title: "Success",
           description: "New parking spot added at your current location!",
