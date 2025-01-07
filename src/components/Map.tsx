@@ -7,16 +7,23 @@ interface MapProps {
   zoom?: number;
   interactive?: boolean;
   className?: string;
+  spots?: Array<{
+    id: number;
+    location: string;
+    coordinates: { lat: number; lng: number } | null;
+  }>;
 }
 
 const Map = ({ 
   center = [-74.5, 40], 
   zoom = 9, 
   interactive = true,
-  className = ""
+  className = "",
+  spots = []
 }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -36,17 +43,55 @@ const Map = ({
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
     }
 
-    // Add marker at the center
-    new mapboxgl.Marker()
-      .setLngLat(center)
-      .addTo(mapInstance);
+    // Add marker at the center if no spots are provided
+    if (spots.length === 0) {
+      new mapboxgl.Marker()
+        .setLngLat(center)
+        .addTo(mapInstance);
+    }
 
     map.current = mapInstance;
 
     return () => {
+      markers.current.forEach(marker => marker.remove());
       mapInstance.remove();
     };
   }, [center, zoom, interactive]);
+
+  // Effect for handling spots
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove existing markers
+    markers.current.forEach(marker => marker.remove());
+    markers.current = [];
+
+    // Add new markers for each spot
+    spots.forEach(spot => {
+      if (spot.coordinates) {
+        const marker = new mapboxgl.Marker()
+          .setLngLat([spot.coordinates.lng, spot.coordinates.lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 25 })
+              .setHTML(`<h3>${spot.location}</h3>`)
+          )
+          .addTo(map.current!);
+        
+        markers.current.push(marker);
+      }
+    });
+
+    // If there are spots, fit the map to show all markers
+    if (spots.length > 0 && map.current) {
+      const bounds = new mapboxgl.LngLatBounds();
+      spots.forEach(spot => {
+        if (spot.coordinates) {
+          bounds.extend([spot.coordinates.lng, spot.coordinates.lat]);
+        }
+      });
+      map.current.fitBounds(bounds, { padding: 50 });
+    }
+  }, [spots]);
 
   return (
     <div 

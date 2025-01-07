@@ -10,7 +10,7 @@ const Home = () => {
       <h1 className="text-3xl font-bold mb-6">Available Parking Spots</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-[400px]">
-          <Map />
+          <Map spots={spots} className="w-full h-full rounded-lg" />
         </div>
         <div className="space-y-4">
           {spots.map((spot) => (
