@@ -10,8 +10,11 @@ interface MapProps {
   spots?: Array<{
     id: number;
     location: string;
+    price?: number;
+    available?: boolean;
     coordinates: { lat: number; lng: number } | null;
   }>;
+  onMarkerClick?: (spotId: number) => void;
 }
 
 const Map = ({ 
@@ -19,7 +22,8 @@ const Map = ({
   zoom = 9, 
   interactive = true,
   className = "",
-  spots = []
+  spots = [],
+  onMarkerClick
 }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -69,13 +73,29 @@ const Map = ({
     // Add new markers for each spot
     spots.forEach(spot => {
       if (spot.coordinates) {
-        const marker = new mapboxgl.Marker()
+        const markerElement = document.createElement('div');
+        markerElement.className = 'cursor-pointer';
+        
+        const marker = new mapboxgl.Marker(markerElement)
           .setLngLat([spot.coordinates.lng, spot.coordinates.lat])
           .setPopup(
             new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`<h3>${spot.location}</h3>`)
+              .setHTML(`
+                <div class="p-2">
+                  <h3 class="font-bold">${spot.location}</h3>
+                  ${spot.price ? `<p>${spot.price} tokens</p>` : ''}
+                  ${spot.available ? '<p class="text-green-600">Available</p>' : '<p class="text-red-600">Taken</p>'}
+                  ${spot.available ? '<p class="text-sm text-blue-600">Click marker to purchase</p>' : ''}
+                </div>
+              `)
           )
           .addTo(map.current!);
+
+        if (onMarkerClick && spot.available) {
+          markerElement.addEventListener('click', () => {
+            onMarkerClick(spot.id);
+          });
+        }
         
         markers.current.push(marker);
       }
@@ -91,7 +111,7 @@ const Map = ({
       });
       map.current.fitBounds(bounds, { padding: 50 });
     }
-  }, [spots]);
+  }, [spots, onMarkerClick]);
 
   return (
     <div 

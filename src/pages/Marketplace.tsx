@@ -36,6 +36,29 @@ const Marketplace = () => {
     }
   };
 
+  const handleSpotPurchase = (spotId: number) => {
+    const spot = spots.find(s => s.id === spotId);
+    if (spot && spot.available) {
+      toast({
+        title: "Confirm Purchase",
+        description: `Would you like to purchase this spot at ${spot.location} for ${spot.price} tokens?`,
+        action: (
+          <Button
+            onClick={() => {
+              // Here you would typically integrate with a payment system
+              toast({
+                title: "Success!",
+                description: "Parking spot purchased successfully.",
+              });
+            }}
+          >
+            Purchase
+          </Button>
+        ),
+      });
+    }
+  };
+
   const addCurrentLocationSpot = () => {
     if (!navigator.geolocation) {
       toast({
@@ -127,15 +150,18 @@ const Marketplace = () => {
                   zoom={15}
                   interactive={false}
                   className="w-full h-full"
+                  spots={[spot]}
+                  onMarkerClick={handleSpotPurchase}
                 />
               </div>
             )}
-            <button
-              className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary/90 transition-colors"
+            <Button
+              className="w-full"
+              onClick={() => handleSpotPurchase(spot.id)}
               disabled={!spot.available}
             >
               {spot.available ? 'Get Spot' : 'Not Available'}
-            </button>
+            </Button>
           </div>
         ))}
       </div>
