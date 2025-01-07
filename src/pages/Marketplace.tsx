@@ -1,15 +1,21 @@
 import { Store, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 import Map from '@/components/Map';
 
+interface ParkingSpot {
+  id: number;
+  location: string;
+  price: number;
+  available: boolean;
+  coordinates: { lat: number; lng: number } | null;
+}
+
 const Marketplace = () => {
-  const [spots, setSpots] = useState([
-    { id: 1, location: "Downtown Plaza", price: 10, available: true, coordinates: null },
-    { id: 2, location: "Central Station", price: 15, available: true, coordinates: null },
-    { id: 3, location: "Shopping Mall", price: 8, available: false, coordinates: null },
-  ]);
+  const [spots, setSpots] = useState<ParkingSpot[]>([]);
+  const [price, setPrice] = useState<number>(10);
   const { toast } = useToast();
 
   const getLocationName = async (lat: number, lng: number) => {
@@ -18,7 +24,8 @@ const Marketplace = () => {
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=pk.eyJ1Ijoia2F1c2hpa2RyIiwiYSI6ImNtNW1yNHlqbDAzOTYya3E2MWI3ajBkZzYifQ.rX-4rgYQIUsBrJP8gU0IcA`
       );
       const data = await response.json();
-      const address = data.features[0]?.text || "My Parking Spot";
+      // Get the most relevant address component (usually the street name)
+      const address = data.features[0]?.place_name || "My Parking Spot";
       return address;
     } catch (error) {
       console.error("Error getting location name:", error);
@@ -48,7 +55,7 @@ const Marketplace = () => {
         const newSpot = {
           id: spots.length + 1,
           location: locationName,
-          price: 10,
+          price: price,
           available: true,
           coordinates
         };
@@ -72,12 +79,21 @@ const Marketplace = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-6 mb-6">
         <h1 className="text-3xl font-bold">Parking Spot Marketplace</h1>
-        <Button onClick={addCurrentLocationSpot} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add My Spot
-        </Button>
+        <div className="flex items-center gap-4">
+          <Input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            placeholder="Set price in tokens"
+            className="max-w-[200px]"
+          />
+          <Button onClick={addCurrentLocationSpot} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add My Spot
+          </Button>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {spots.map((spot) => (
@@ -91,7 +107,7 @@ const Marketplace = () => {
               </span>
             </div>
             <h3 className="text-lg font-semibold mb-2">{spot.location}</h3>
-            <p className="text-gray-600 mb-4">Price: {spot.price} tokens</p>
+            <p className="text-gray-600 mb-4">{spot.price} tokens</p>
             {spot.coordinates && (
               <div className="mb-4 h-[150px] rounded-lg overflow-hidden">
                 <Map 
