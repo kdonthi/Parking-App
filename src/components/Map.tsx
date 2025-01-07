@@ -12,7 +12,7 @@ const Map = () => {
     try {
       // Initialize map only if it hasn't been initialized yet
       if (!map.current) {
-        const token = 'pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbHJ3ZjB5NmkwMXpvMmlsOGZpenV4OWl2In0.7c10DKBqGkE_OGDCrUbKng';
+        const token = 'pk.eyJ1Ijoia2F1c2hpa2RyIiwiYSI6ImNtNW1yNHlqbDAzOTYya3E2MWI3ajBkZzYifQ.rX-4rgYQIUsBrJP8gU0IcA';
         
         // Set the token before creating the map
         mapboxgl.accessToken = token;
