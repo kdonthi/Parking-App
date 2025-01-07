@@ -2,6 +2,7 @@ import { Store, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import Map from '@/components/Map';
 
 const Marketplace = () => {
   const [spots, setSpots] = useState([
@@ -10,6 +11,20 @@ const Marketplace = () => {
     { id: 3, location: "Shopping Mall", price: 8, available: false, coordinates: null },
   ]);
   const { toast } = useToast();
+
+  const getLocationName = async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=pk.eyJ1Ijoia2F1c2hpa2RyIiwiYSI6ImNtNW1yNHlqbDAzOTYya3E2MWI3ajBkZzYifQ.rX-4rgYQIUsBrJP8gU0IcA`
+      );
+      const data = await response.json();
+      const address = data.features[0]?.text || "My Parking Spot";
+      return address;
+    } catch (error) {
+      console.error("Error getting location name:", error);
+      return "My Parking Spot";
+    }
+  };
 
   const addCurrentLocationSpot = () => {
     if (!navigator.geolocation) {
@@ -22,16 +37,20 @@ const Marketplace = () => {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const coordinates = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        
+        const locationName = await getLocationName(coordinates.lat, coordinates.lng);
+        
         const newSpot = {
           id: spots.length + 1,
-          location: "My Parking Spot",
+          location: locationName,
           price: 10,
           available: true,
-          coordinates: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
+          coordinates
         };
 
         setSpots([...spots, newSpot]);
@@ -74,9 +93,14 @@ const Marketplace = () => {
             <h3 className="text-lg font-semibold mb-2">{spot.location}</h3>
             <p className="text-gray-600 mb-4">Price: {spot.price} tokens</p>
             {spot.coordinates && (
-              <p className="text-sm text-gray-500 mb-4">
-                Location: {spot.coordinates.lat.toFixed(6)}, {spot.coordinates.lng.toFixed(6)}
-              </p>
+              <div className="mb-4 h-[150px] rounded-lg overflow-hidden">
+                <Map 
+                  center={[spot.coordinates.lng, spot.coordinates.lat]}
+                  zoom={15}
+                  interactive={false}
+                  className="w-full h-full"
+                />
+              </div>
             )}
             <button
               className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary/90 transition-colors"
