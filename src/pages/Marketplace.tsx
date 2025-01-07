@@ -25,7 +25,6 @@ const Marketplace = () => {
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=pk.eyJ1Ijoia2F1c2hpa2RyIiwiYSI6ImNtNW1yNHlqbDAzOTYya3E2MWI3ajBkZzYifQ.rX-4rgYQIUsBrJP8gU0IcA`
       );
       const data = await response.json();
-      // Get the most relevant address component (usually the street name)
       const address = data.features[0]?.place_name || "My Parking Spot";
       return address;
     } catch (error) {
@@ -61,11 +60,20 @@ const Marketplace = () => {
           coordinates
         };
 
-        addSpot(newSpot);
-        toast({
-          title: "Success",
-          description: "New parking spot added at your current location!",
-        });
+        const added = addSpot(newSpot);
+        
+        if (added) {
+          toast({
+            title: "Success",
+            description: "New parking spot added at your current location!",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "A parking spot already exists at this location. Please choose a different spot.",
+            variant: "destructive",
+          });
+        }
       },
       (error) => {
         toast({
