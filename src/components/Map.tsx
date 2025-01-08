@@ -23,8 +23,9 @@ const formatLocation = (location: string) => {
   if (parts.length >= 1) {
     // Get the street name without number
     const streetPart = parts[0];
-    const streetNameMatch = streetPart.match(/\d+\s+(.+)/);
-    const streetName = streetNameMatch ? streetNameMatch[1] : streetPart;
+    // Updated regex to better match street numbers
+    const streetNameMatch = streetPart.match(/^(\d+\s*-?\s*\d*\s+)?(.+)/);
+    const streetName = streetNameMatch ? streetNameMatch[2] : streetPart;
     
     // Return only street name and remaining parts (city, state, zip)
     return [streetName, ...parts.slice(1)].join(', ');
