@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { create } from 'zustand';
 
 interface ParkingSpot {
@@ -56,10 +57,17 @@ export const useParkingSpotsStore = create<ParkingSpotsStore>((set, get) => ({
     });
 
     if (isDuplicate) {
+      console.log('A parking spot is already at this location.');
+      toast.error('A parking spot is already at this location.');
       return false;
     }
 
     set((state) => ({ spots: [...state.spots, spot] }));
+    console.log('Parking spot added successfully.');
+    set((state) => {
+      console.log('Parking spots:', state.spots);
+      return ({spots: state.spots})
+    });
     return true;
   },
 }));

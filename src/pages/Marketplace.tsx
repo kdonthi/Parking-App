@@ -57,6 +57,13 @@ const Marketplace = () => {
         ),
       });
     }
+    else {
+      toast({
+        title: "Error",
+        description: "Parking spot is not available.",
+        variant: "destructive"
+      });
+    }
   };
 
   const addCurrentLocationSpot = () => {
