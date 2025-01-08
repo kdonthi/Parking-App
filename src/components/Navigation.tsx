@@ -10,6 +10,13 @@ const Navigation = () => {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   
+  const tabs = [
+    { path: '/', label: 'Home', icon: MapPin },
+    { path: '/marketplace', label: 'Marketplace', icon: Store },
+    { path: '/shop', label: 'Shop', icon: ShoppingBag },
+    { path: '/about', label: 'About', icon: User },
+  ];
+  
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
     setUserId(storedUserId);
