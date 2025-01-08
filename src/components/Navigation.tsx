@@ -55,10 +55,10 @@ const Navigation = () => {
                 </Link>
               ))}
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="font-serif italic text-primary text-lg">
+            <div className="flex items-center pl-4 border-l border-gray-200">
+              <div className="mr-4 text-primary font-medium">
                 {userId}
-              </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
