@@ -3,21 +3,25 @@ import { useToast } from '@/hooks/use-toast';
 import { useParkingSpotsStore } from '@/store/parkingSpots';
 import AddSpotForm from '@/components/marketplace/AddSpotForm';
 import ParkingSpotCard from '@/components/marketplace/ParkingSpotCard';
+import { useUserState } from '@/hooks/useUserState';
 
 const Marketplace = () => {
   const spots = useParkingSpotsStore((state) => state.spots);
   const addSpot = useParkingSpotsStore((state) => state.addSpot);
   const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
+  const { userId } = useUserState();
   const { toast } = useToast();
 
   const handleSpotPurchase = (spotId: number) => {
     const spot = spots.find(s => s.id === spotId);
     if (spot && spot.available) {
-      purchaseSpot(spotId);
+      
+      purchaseSpot(spotId, userId);
       toast({
         title: "Success!",
         description: "Parking spot purchased successfully.",
       });
+      
     }
   };
 

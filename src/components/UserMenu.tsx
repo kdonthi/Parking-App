@@ -27,6 +27,7 @@ export const UserMenu = () => {
         <DropdownMenuContent className="w-96">
           <DropdownMenuLabel>Your Parking Spots</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {console.log(useParkingSpotsStore.getState().spots)}
           {useParkingSpotsStore.getState().spots.length > 0 ? useParkingSpotsStore.getState().spots.filter((spot) => !spot.available && spot.owner === userId).map((spot) => (
             <DropdownMenuItem key={spot.id}>
               <div className="flex flex-col w-full">

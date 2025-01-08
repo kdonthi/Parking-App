@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useParkingSpotsStore } from '@/store/parkingSpots';
+import { useUserState } from '@/hooks/useUserState';
 
 const Home = () => {
   const spots = useParkingSpotsStore((state) => state.spots);
   const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
+  const { userId } = useUserState();
   const { toast } = useToast();
 
   const handleSpotPurchase = (spotId: number) => {
@@ -19,7 +21,7 @@ const Home = () => {
         action: (
           <Button
             onClick={() => {
-              purchaseSpot(spotId);
+              purchaseSpot(spotId, userId);
               toast({
                 title: "Success!",
                 description: "Parking spot purchased successfully.",

@@ -16,7 +16,7 @@ interface ParkingSpotsState {
   spots: ParkingSpot[];
   addSpot: (spot: ParkingSpot) => void;
   updateSpot: (spotId: number, updates: Partial<ParkingSpot>) => void;
-  purchaseSpot: (spotId: number) => void;
+  purchaseSpot: (spotId: number, userId: string) => void;
 }
 
 export const useParkingSpotsStore = create<ParkingSpotsState>((set) => ({
@@ -48,10 +48,10 @@ export const useParkingSpotsStore = create<ParkingSpotsState>((set) => ({
         spot.id === spotId ? { ...spot, ...updates } : spot
       )
     })),
-  purchaseSpot: (spotId) =>
+  purchaseSpot: (spotId, userId) =>
     set((state) => ({
       spots: state.spots.map((spot) =>
-        spot.id === spotId ? { ...spot, available: false } : spot
+        spot.id === spotId ? { ...spot, available: false, owner: userId } : spot
       )
     }))
 }));
