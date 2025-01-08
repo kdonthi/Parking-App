@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      parking_spots: {
+        Row: {
+          available: boolean | null
+          coordinates: Json
+          created_at: string
+          full_address: string
+          id: number
+          location_preview: string
+          price: number
+        }
+        Insert: {
+          available?: boolean | null
+          coordinates: Json
+          created_at?: string
+          full_address: string
+          id?: number
+          location_preview: string
+          price: number
+        }
+        Update: {
+          available?: boolean | null
+          coordinates?: Json
+          created_at?: string
+          full_address?: string
+          id?: number
+          location_preview?: string
+          price?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -29,6 +59,35 @@ export type Database = {
           username?: string | null
         }
         Relationships: []
+      }
+      spot_purchases: {
+        Row: {
+          id: number
+          purchased_at: string
+          spot_id: number | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: number
+          purchased_at?: string
+          spot_id?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: number
+          purchased_at?: string
+          spot_id?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spot_purchases_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "parking_spots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
