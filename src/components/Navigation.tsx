@@ -24,6 +24,7 @@ const Navigation = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('userId');
+    setUserId(null);
     navigate('/auth');
     toast({
       title: "Success",
