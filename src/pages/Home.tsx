@@ -1,26 +1,88 @@
+import { useEffect, useState } from 'react';
 import Map from '../components/Map';
-import { useParkingSpotsStore } from '../store/parkingSpots';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+
+interface ParkingSpot {
+  id: number;
+  location: string;
+  price: number;
+  available: boolean;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
 
 const Home = () => {
-  const spots = useParkingSpotsStore((state) => state.spots);
+  const [spots, setSpots] = useState<ParkingSpot[]>([]);
   const { toast } = useToast();
 
-  const handleSpotPurchase = (spotId: number) => {
+  useEffect(() => {
+    fetchParkingSpots();
+  }, []);
+
+  const fetchParkingSpots = async () => {
+    const { data, error } = await supabase
+      .from('parking_spots')
+      .select('*');
+    
+    if (error) {
+      console.error('Error fetching parking spots:', error);
+      return;
+    }
+
+    setSpots(data || []);
+  };
+
+  const handleSpotPurchase = async (spotId: number) => {
     const spot = spots.find(s => s.id === spotId);
     if (spot && spot.available) {
       toast({
         title: "Confirm Purchase",
-        description: `Would you like to purchase this spot at ${spot.location} for ${spot.price} tokens?`,
+        description: `Would you like to purchase this spot at ${spot.location_preview} for ${spot.price} tokens?`,
         action: (
           <Button
-            onClick={() => {
+            onClick={async () => {
+              const { error } = await supabase
+                .from('spot_purchases')
+                .insert([
+                  { spot_id: spotId }
+                ]);
+              
+              if (error) {
+                toast({
+                  title: "Error",
+                  description: "Failed to purchase parking spot.",
+                  variant: "destructive"
+                });
+                return;
+              }
+
+              // Update spot availability
+              const { error: updateError } = await supabase
+                .from('parking_spots')
+                .update({ available: false })
+                .eq('id', spotId);
+
+              if (updateError) {
+                toast({
+                  title: "Error",
+                  description: "Failed to update spot availability.",
+                  variant: "destructive"
+                });
+                return;
+              }
+
               toast({
                 title: "Success!",
                 description: "Parking spot purchased successfully.",
               });
+              
+              // Refresh the spots list
+              fetchParkingSpots();
             }}
           >
             Purchase
@@ -45,7 +107,7 @@ const Home = () => {
           {spots.map((spot) => (
             <Card key={spot.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{spot.location}</CardTitle>
+                <CardTitle className="text-lg">{spot.location_preview}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">{spot.price} tokens</p>
