@@ -1,8 +1,13 @@
-import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShoppingBag, Store, User } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MapPin, ShoppingBag, Store, User, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   const tabs = [
     { path: '/', label: 'Home', icon: MapPin },
@@ -11,6 +16,19 @@ const Navigation = () => {
     { path: '/about', label: 'About', icon: User },
   ];
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4">
@@ -18,21 +36,32 @@ const Navigation = () => {
           <div className="flex-shrink-0 flex items-center">
             <span className="text-primary font-bold text-xl">ParkSpot</span>
           </div>
-          <div className="flex space-x-4">
-            {tabs.map(({ path, label, icon: Icon }) => (
-              <Link
-                key={path}
-                to={path}
-                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors
-                  ${location.pathname === path
-                    ? 'bg-primary text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-              >
-                <Icon className="w-4 h-4 mr-2" />
-                {label}
-              </Link>
-            ))}
+          <div className="flex items-center space-x-4">
+            <div className="flex space-x-4">
+              {tabs.map(({ path, label, icon: Icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    ${location.pathname === path
+                      ? 'bg-primary text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {label}
+                </Link>
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="ml-4"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
