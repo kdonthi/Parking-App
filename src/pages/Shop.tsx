@@ -33,7 +33,16 @@ const Shop = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSpots(data || []);
+
+      // Transform the coordinates from Json to the expected format
+      const transformedSpots = (data || []).map(spot => ({
+        ...spot,
+        coordinates: typeof spot.coordinates === 'string' 
+          ? JSON.parse(spot.coordinates)
+          : spot.coordinates as { lat: number; lng: number }
+      }));
+
+      setSpots(transformedSpots);
     } catch (error) {
       console.error('Error fetching spots:', error);
       toast({
@@ -104,10 +113,7 @@ const Shop = () => {
             location: spot.location_preview,
             price: spot.price,
             available: spot.available,
-            coordinates: {
-              lat: spot.coordinates.lat,
-              lng: spot.coordinates.lng
-            }
+            coordinates: spot.coordinates
           }))}
           onMarkerClick={handleSpotPurchase}
           className="w-full h-full"
