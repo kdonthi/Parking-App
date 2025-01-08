@@ -1,10 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShoppingBag, Store, User } from 'lucide-react';
+import { MapPin, Store, User } from 'lucide-react';
 
 const tabs = [
   { path: '/', label: 'Home', icon: MapPin },
   { path: '/marketplace', label: 'Marketplace', icon: Store },
-  { path: '/shop', label: 'Shop', icon: ShoppingBag },
   { path: '/about', label: 'About', icon: User },
 ];
 
