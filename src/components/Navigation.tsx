@@ -3,7 +3,6 @@ import { MapPin, ShoppingBag, Store, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +25,6 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [purchasedSpots, setPurchasedSpots] = useState<PurchasedSpot[]>([]);
   
   const tabs = [
@@ -37,78 +35,17 @@ const Navigation = () => {
   ];
   
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserId(session.user.id);
-        setUserEmail(session.user.email);
-        fetchPurchasedSpots(session.user.id);
-      } else {
-        navigate('/auth');
-      }
-    };
-    
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setUserId(session.user.id);
-        setUserEmail(session.user.email);
-        fetchPurchasedSpots(session.user.id);
-      } else {
-        setUserId(null);
-        setUserEmail(null);
-        setPurchasedSpots([]);
-        navigate('/auth');
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      navigate('/auth');
+    }
   }, [navigate]);
 
-  const fetchPurchasedSpots = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('spot_purchases')
-        .select(`
-          spot_id,
-          purchased_at,
-          parking_spots (
-            id,
-            full_address,
-            location_preview,
-            price
-          )
-        `)
-        .eq('user_id', userId);
-
-      if (error) throw error;
-
-      const spots = data.map(purchase => ({
-        id: purchase.parking_spots.id,
-        full_address: purchase.parking_spots.full_address,
-        location_preview: purchase.parking_spots.location_preview,
-        price: purchase.parking_spots.price,
-        purchased_at: purchase.purchased_at,
-      }));
-
-      setPurchasedSpots(spots);
-    } catch (error) {
-      console.error('Error fetching purchased spots:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load your parking spots",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
     setUserId(null);
-    setUserEmail(null);
     setPurchasedSpots([]);
     navigate('/auth');
     toast({

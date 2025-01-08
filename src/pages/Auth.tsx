@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -13,26 +12,20 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${userId}@example.com`,
-        password: 'password123'
+    if (userId.trim()) {
+      // Store the user ID in localStorage for persistence
+      localStorage.setItem('userId', userId);
+      
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
       });
-
-      if (error) throw error;
-
-      if (data.session) {
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Error:', error);
+      
+      navigate('/');
+    } else {
       toast({
         title: "Error",
-        description: "Failed to log in",
+        description: "Please enter a User ID",
         variant: "destructive",
       });
     }
