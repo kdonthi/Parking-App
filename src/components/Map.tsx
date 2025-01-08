@@ -17,6 +17,21 @@ interface MapProps {
   onMarkerClick?: (spotId: number) => void;
 }
 
+const formatLocation = (location: string) => {
+  // Split the address into parts
+  const parts = location.split(',').map(part => part.trim());
+  if (parts.length >= 1) {
+    // Get the street name without number
+    const streetPart = parts[0];
+    const streetNameMatch = streetPart.match(/\d+\s+(.+)/);
+    const streetName = streetNameMatch ? streetNameMatch[1] : streetPart;
+    
+    // Return only street name and remaining parts (city, state, zip)
+    return [streetName, ...parts.slice(1)].join(', ');
+  }
+  return location;
+};
+
 const Map = ({ 
   center = [-74.5, 40], 
   zoom = 9, 
@@ -47,7 +62,6 @@ const Map = ({
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
     }
 
-    // Add marker at the center if no spots are provided
     if (spots.length === 0) {
       new mapboxgl.Marker()
         .setLngLat(center)
@@ -62,15 +76,12 @@ const Map = ({
     };
   }, [center, zoom, interactive]);
 
-  // Effect for handling spots
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove existing markers
     markers.current.forEach(marker => marker.remove());
     markers.current = [];
 
-    // Add new markers for each spot
     spots.forEach(spot => {
       if (spot.coordinates) {
         const markerElement = document.createElement('div');
@@ -82,7 +93,7 @@ const Map = ({
             new mapboxgl.Popup({ offset: 25 })
               .setHTML(`
                 <div class="p-2">
-                  <h3 class="font-bold">${spot.location}</h3>
+                  <h3 class="font-bold">${formatLocation(spot.location)}</h3>
                   ${spot.price ? `<p>${spot.price} tokens</p>` : ''}
                   ${spot.available ? '<p class="text-green-600">Available</p>' : '<p class="text-red-600">Taken</p>'}
                   ${spot.available ? '<p class="text-sm text-blue-600">Click marker to purchase</p>' : ''}
@@ -101,7 +112,6 @@ const Map = ({
       }
     });
 
-    // If there are spots, fit the map to show all markers
     if (spots.length > 0 && map.current) {
       const bounds = new mapboxgl.LngLatBounds();
       spots.forEach(spot => {
