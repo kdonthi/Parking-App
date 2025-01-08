@@ -50,14 +50,13 @@ const Marketplace = () => {
                 title: "Success!",
                 description: "Parking spot purchased successfully.",
               });
+              spot.available = false;
             }}
           >
             Purchase
           </Button>
         ),
       });
-
-      spot.available = false;
     }
     else {
       toast({
@@ -140,7 +139,7 @@ const Marketplace = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {spots.map((spot) => (
+        {spots.filter(spot => spot.available).map((spot) => (
           <div key={spot.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <Store className="w-6 h-6 text-primary" />
