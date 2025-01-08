@@ -1,59 +1,7 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MapPin, ShoppingBag, Store, User, LogOut } from 'lucide-react';
-import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-interface PurchasedSpot {
-  id: number;
-  full_address: string;
-  location_preview: string;
-  price: number;
-  purchased_at: string;
-}
+import { NavigationTabs } from './NavigationTabs';
+import { UserMenu } from './UserMenu';
 
 const Navigation = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [purchasedSpots, setPurchasedSpots] = useState<PurchasedSpot[]>([]);
-  
-  const tabs = [
-    { path: '/', label: 'Home', icon: MapPin },
-    { path: '/marketplace', label: 'Marketplace', icon: Store },
-    { path: '/shop', label: 'Shop', icon: ShoppingBag },
-    { path: '/about', label: 'About', icon: User },
-  ];
-  
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    if (storedUserId) {
-      setUserId(storedUserId);
-    } else {
-      navigate('/auth');
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('userId');
-    setUserId(null);
-    setPurchasedSpots([]);
-    navigate('/auth');
-    toast({
-      title: "Success",
-      description: "Logged out successfully",
-    });
-  };
-
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-4">
@@ -62,62 +10,8 @@ const Navigation = () => {
             <span className="text-primary font-bold text-xl">ParkSpot</span>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex space-x-4">
-              {tabs.map(({ path, label, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors
-                    ${location.pathname === path
-                      ? 'bg-primary text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {label}
-                </Link>
-              ))}
-            </div>
-            <div className="flex items-center pl-4 border-l border-gray-200">
-              {userId && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="mr-4">
-                      <span className="text-primary font-medium">{userId}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-96">
-                    <DropdownMenuLabel>Your Parking Spots</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {purchasedSpots.length === 0 ? (
-                      <DropdownMenuItem disabled>
-                        No parking spots purchased yet
-                      </DropdownMenuItem>
-                    ) : (
-                      purchasedSpots.map((spot) => (
-                        <DropdownMenuItem key={spot.id} className="flex flex-col items-start p-4">
-                          <div className="font-medium">{spot.full_address}</div>
-                          <div className="text-sm text-gray-500">
-                            Price: {spot.price} tokens
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            Purchased on: {new Date(spot.purchased_at).toLocaleDateString()}
-                          </div>
-                        </DropdownMenuItem>
-                      ))
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+            <NavigationTabs />
+            <UserMenu />
           </div>
         </div>
       </div>

@@ -5,15 +5,14 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const [userId, setUserId] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userId, setUserId] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (userId.trim()) {
-      // Store the user ID in localStorage for persistence
       localStorage.setItem('userId', userId);
       
       toast({
@@ -32,22 +31,31 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-primary">Welcome to ParkSpot</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
             <Input
               type="text"
-              placeholder="Enter User ID"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              className="w-full"
+              placeholder="Enter User ID"
+              className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
             />
           </div>
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
+          <div>
+            <Button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            >
+              Sign in
+            </Button>
+          </div>
         </form>
       </div>
     </div>
