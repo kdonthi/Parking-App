@@ -34,13 +34,26 @@ const Shop = () => {
 
       if (error) throw error;
 
-      // Transform the coordinates from Json to the expected format
-      const transformedSpots = (data || []).map(spot => ({
-        ...spot,
-        coordinates: typeof spot.coordinates === 'string' 
+      // Transform the coordinates and simplify location preview
+      const transformedSpots = (data || []).map(spot => {
+        // Parse coordinates
+        const coordinates = typeof spot.coordinates === 'string' 
           ? JSON.parse(spot.coordinates)
-          : spot.coordinates as { lat: number; lng: number }
-      }));
+          : spot.coordinates as { lat: number; lng: number };
+        
+        // Simplify location preview by removing house number and mapbox link
+        const locationParts = spot.location_preview.split(',');
+        const simplifiedLocation = locationParts
+          .slice(1) // Remove the first part (house number and street)
+          .join(',')
+          .trim();
+
+        return {
+          ...spot,
+          coordinates,
+          location_preview: `${locationParts[0].split(' ').slice(1).join(' ')}${simplifiedLocation}` // Keep street name without number
+        };
+      });
 
       setSpots(transformedSpots);
     } catch (error) {
