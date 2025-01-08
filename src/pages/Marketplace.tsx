@@ -56,6 +56,8 @@ const Marketplace = () => {
           </Button>
         ),
       });
+
+      spot.available = false;
     }
     else {
       toast({
