@@ -44,14 +44,12 @@ const Navigation = () => {
         setUserEmail(session.user.email);
         fetchPurchasedSpots(session.user.id);
       } else {
-        // If no session, redirect to auth page
         navigate('/auth');
       }
     };
     
     checkUser();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUserId(session.user.id);
@@ -144,11 +142,11 @@ const Navigation = () => {
               ))}
             </div>
             <div className="flex items-center pl-4 border-l border-gray-200">
-              {userEmail && (
+              {userId && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="mr-4">
-                      <span className="text-primary font-medium">{userEmail}</span>
+                      <span className="text-primary font-medium">{userId}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-96">
