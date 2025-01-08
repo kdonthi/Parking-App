@@ -2,12 +2,19 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, ShoppingBag, Store, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
   
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    setUserId(storedUserId);
+  }, []);
+
   const tabs = [
     { path: '/', label: 'Home', icon: MapPin },
     { path: '/marketplace', label: 'Marketplace', icon: Store },
@@ -48,15 +55,19 @@ const Navigation = () => {
                 </Link>
               ))}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="ml-4"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex items-center space-x-4">
+              <span className="font-serif italic text-primary text-lg">
+                {userId}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>
