@@ -23,14 +23,6 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleError = (error: AuthError) => {
-    let message = error.message;
-    if (error.message.includes('email_provider_disabled')) {
-      message = 'Email authentication is currently disabled. Please enable it in your Supabase dashboard under Auth > Providers > Email.';
-    }
-    setErrorMessage(message);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
@@ -51,7 +43,6 @@ const Auth = () => {
           }}
           theme="light"
           providers={[]}
-          onError={handleError}
         />
       </div>
     </div>
