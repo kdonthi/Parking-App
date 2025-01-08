@@ -81,13 +81,22 @@ const Shop = () => {
         return;
       }
 
-      const { error } = await supabase
+      // First update the parking spot to mark it as unavailable
+      const { error: updateError } = await supabase
+        .from('parking_spots')
+        .update({ available: false })
+        .eq('id', spotId);
+
+      if (updateError) throw updateError;
+
+      // Then create the purchase record
+      const { error: purchaseError } = await supabase
         .from('spot_purchases')
         .insert([
           { spot_id: spotId, user_id: session.data.session.user.id }
         ]);
 
-      if (error) throw error;
+      if (purchaseError) throw purchaseError;
 
       // Update local state to mark spot as unavailable
       setSpots(spots.map(spot => 
