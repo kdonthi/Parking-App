@@ -11,6 +11,8 @@ interface AddSpotFormProps {
     location: string;
     price: number;
     available: boolean;
+    owner: string;
+    buyer: string;
     coordinates: { lat: number; lng: number };
   }) => void;
 }

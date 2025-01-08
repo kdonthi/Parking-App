@@ -1,25 +1,19 @@
-import { Store } from 'lucide-react';
+import { Store, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Map from '@/components/Map';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-
-interface ParkingSpot {
-  id: number;
-  location_preview: string;
-  full_address: string;
-  price: number;
-  available: boolean;
-  coordinates: { lat: number; lng: number };
-}
+import { ParkingSpot, useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
+import { userInfo } from 'os';
 
 const Shop = () => {
-  const [spots, setSpots] = useState<ParkingSpot[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const spots = useParkingSpotsStore((state) => state.spots);
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     fetchSpots();
@@ -27,35 +21,8 @@ const Shop = () => {
 
   const fetchSpots = async () => {
     try {
-      const { data, error } = await supabase
-        .from('parking_spots')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Transform the coordinates and simplify location preview
-      const transformedSpots = (data || []).map(spot => {
-        // Parse coordinates
-        const coordinates = typeof spot.coordinates === 'string' 
-          ? JSON.parse(spot.coordinates)
-          : spot.coordinates as { lat: number; lng: number };
-        
-        // Simplify location preview by removing house number and mapbox link
-        const locationParts = spot.location_preview.split(',');
-        const simplifiedLocation = locationParts
-          .slice(1) // Remove the first part (house number and street)
-          .join(',')
-          .trim();
-
-        return {
-          ...spot,
-          coordinates,
-          location_preview: `${locationParts[0].split(' ').slice(1).join(' ')}${simplifiedLocation}` // Keep street name without number
-        };
-      });
-
-      setSpots(transformedSpots);
+      const spots = useParkingSpotsStore((state) => state.spots);
+      return spots;
     } catch (error) {
       console.error('Error fetching spots:', error);
       toast({
@@ -70,43 +37,48 @@ const Shop = () => {
 
   const handleSpotPurchase = async (spotId: number) => {
     try {
-      const session = await supabase.auth.getSession();
-      if (!session.data.session) {
+      // mark spot as unavailable
+      // add user id to spot
+      const users = useUsersStore((state) => state.users).filter((user) => user.owner === userId);
+      if (users.length === 0) {
         toast({
-          title: "Authentication Required",
-          description: "Please sign in to purchase a spot",
+          title: "Error",
+          description: "User not logged in",
           variant: "destructive",
         });
-        navigate('/auth');
+        return;
+      }
+      const user = users[0];
+      
+      const spots = useParkingSpotsStore((state => state.spots)).filter((spot) => spot.id === spotId);
+      if (spots.length === 0) {
+        toast({
+          title: "Error",
+          description: "Spot not found",
+          variant: "destructive",
+        });
+        return;
+      }
+      const spot = spots[0];
+      
+      if (spot.price > user.tokens) {
+        toast({
+          title: "Insufficient Tokens",
+          description: `You need ${spot.price} tokens to purchase this spot. Your balance: ${user.tokens} tokens`,
+          variant: "destructive",
+        });
         return;
       }
 
-      // First update the parking spot to mark it as unavailable
-      const { error: updateError } = await supabase
-        .from('parking_spots')
-        .update({ available: false })
-        .eq('id', spotId);
-
-      if (updateError) throw updateError;
-
-      // Then create the purchase record
-      const { error: purchaseError } = await supabase
-        .from('spot_purchases')
-        .insert([
-          { spot_id: spotId, user_id: session.data.session.user.id }
-        ]);
-
-      if (purchaseError) throw purchaseError;
-
-      // Update local state to mark spot as unavailable
-      setSpots(spots.map(spot => 
-        spot.id === spotId ? { ...spot, available: false } : spot
-      ));
+      user.tokens -= spot.price;
+      spot.buyer = userId;
+      spot.available = false;
 
       toast({
         title: "Success!",
         description: "Parking spot purchased successfully. Check your purchases for the full address.",
       });
+      
     } catch (error) {
       console.error('Error purchasing spot:', error);
       toast({
@@ -132,7 +104,7 @@ const Shop = () => {
         <Map 
           spots={spots.map(spot => ({
             id: spot.id,
-            location: spot.location_preview,
+            location: spot.location,
             price: spot.price,
             available: spot.available,
             coordinates: spot.coordinates
@@ -144,7 +116,7 @@ const Shop = () => {
 
       {/* Grid View */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {spots.map((spot) => (
+        {useParkingSpotsStore(state => state.spots).map((spot) => (
           <div key={spot.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <Store className="w-6 h-6 text-primary" />
@@ -154,7 +126,7 @@ const Shop = () => {
                 {spot.available ? 'Available' : 'Taken'}
               </span>
             </div>
-            <h3 className="text-lg font-semibold mb-2">{spot.location_preview}</h3>
+            <h3 className="text-lg font-semibold mb-2">{spot.location}</h3>
             <p className="text-gray-600 mb-4">{spot.price} tokens</p>
             <div className="mb-4 h-[150px] rounded-lg overflow-hidden">
               <Map 
@@ -164,7 +136,7 @@ const Shop = () => {
                 className="w-full h-full"
                 spots={[{
                   id: spot.id,
-                  location: spot.location_preview,
+                  location: spot.location,
                   price: spot.price,
                   available: spot.available,
                   coordinates: spot.coordinates

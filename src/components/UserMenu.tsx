@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUserState } from '@/hooks/useUserState';
-import { useParkingSpotsStore } from '@/store/parkingSpots';
+import { useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
 
 export const UserMenu = () => {
   const { userId, handleLogout } = useUserState();
@@ -25,9 +25,17 @@ export const UserMenu = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-96">
+          <DropdownMenuLabel>Account Balance</DropdownMenuLabel>
+          <DropdownMenuItem disabled>
+            <div className="flex flex-col w-full">
+              <span className="font-medium">
+                {useUsersStore.getState().users.find(u => u.owner === userId)?.tokens || 0} tokens
+              </span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuLabel>Your Parking Spots</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {console.log(useParkingSpotsStore.getState().spots)}
           {useParkingSpotsStore.getState().spots.length > 0 ? useParkingSpotsStore.getState().spots.filter((spot) => !spot.available && spot.owner === userId).map((spot) => (
             <DropdownMenuItem key={spot.id}>
               <div className="flex flex-col w-full">
