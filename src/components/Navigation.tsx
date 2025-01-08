@@ -43,11 +43,32 @@ const Navigation = () => {
         setUserId(session.user.id);
         setUserEmail(session.user.email);
         fetchPurchasedSpots(session.user.id);
+      } else {
+        // If no session, redirect to auth page
+        navigate('/auth');
       }
     };
     
     checkUser();
-  }, []);
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUserId(session.user.id);
+        setUserEmail(session.user.email);
+        fetchPurchasedSpots(session.user.id);
+      } else {
+        setUserId(null);
+        setUserEmail(null);
+        setPurchasedSpots([]);
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const fetchPurchasedSpots = async (userId: string) => {
     try {
@@ -123,7 +144,7 @@ const Navigation = () => {
               ))}
             </div>
             <div className="flex items-center pl-4 border-l border-gray-200">
-              {userId && (
+              {userEmail && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="mr-4">
