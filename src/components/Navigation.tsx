@@ -15,13 +15,6 @@ const Navigation = () => {
     setUserId(storedUserId);
   }, []);
 
-  const tabs = [
-    { path: '/', label: 'Home', icon: MapPin },
-    { path: '/marketplace', label: 'Marketplace', icon: Store },
-    { path: '/shop', label: 'Shop', icon: ShoppingBag },
-    { path: '/about', label: 'About', icon: User },
-  ];
-
   const handleLogout = () => {
     localStorage.removeItem('userId');
     setUserId(null);

@@ -1,79 +1,26 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import Navigation from "./components/Navigation";
-import Home from "./pages/Home";
-import Marketplace from "./pages/Marketplace";
-import Shop from "./pages/Shop";
-import About from "./pages/About";
-import Auth from "./pages/Auth";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navigation from './components/Navigation';
+import Home from './pages/Home';
+import Marketplace from './pages/Marketplace';
+import Shop from './pages/Shop';
+import About from './pages/About';
+import Auth from './pages/Auth';
+import { Toaster } from './components/ui/toaster';
 
-const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    setUserId(storedUserId);
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!userId) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  return <>{children}</>;
+const App = () => {
+  return (
+    <Router>
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/auth" element={<Auth />} />
+      </Routes>
+      <Toaster />
+    </Router>
+  );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/marketplace"
-            element={
-              <ProtectedRoute>
-                <Marketplace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/shop"
-            element={
-              <ProtectedRoute>
-                <Shop />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <ProtectedRoute>
-                <About />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
 
 export default App;
