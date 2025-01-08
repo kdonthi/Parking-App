@@ -1,8 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "./integrations/supabase/client";
 import Navigation from "./components/Navigation";
 import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
@@ -13,27 +11,20 @@ import Auth from "./pages/Auth";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    const storedUserId = localStorage.getItem('userId');
+    setUserId(storedUserId);
+    setLoading(false);
   }, []);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  if (!session) {
+  if (!userId) {
     return <Navigate to="/auth" replace />;
   }
 

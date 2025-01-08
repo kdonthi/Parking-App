@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, ShoppingBag, Store, User, LogOut } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,17 +15,13 @@ const Navigation = () => {
     { path: '/about', label: 'About', icon: User },
   ];
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      navigate('/auth');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    navigate('/auth');
+    toast({
+      title: "Success",
+      description: "Logged out successfully",
+    });
   };
 
   return (
