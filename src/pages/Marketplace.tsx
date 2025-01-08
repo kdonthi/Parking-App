@@ -1,57 +1,17 @@
 import { Store, Plus } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import Map from '@/components/Map';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserState } from '@/hooks/useUserState';
-
-interface ParkingSpot {
-  id: number;
-  location: string;
-  price: number;
-  available: boolean;
-  coordinates: { lat: number; lng: number } | null;
-}
+import { useParkingSpotsStore } from '@/store/parkingSpots';
 
 const Marketplace = () => {
   const [price, setPrice] = useState<number>(10);
-  const [spots, setSpots] = useState<ParkingSpot[]>([]);
+  const spots = useParkingSpotsStore((state) => state.spots);
+  const addSpot = useParkingSpotsStore((state) => state.addSpot);
+  const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
   const { toast } = useToast();
-  const { userId } = useUserState();
-
-  useEffect(() => {
-    fetchSpots();
-  }, []);
-
-  const fetchSpots = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('parking_spots')
-        .select('*')
-        .eq('available', true);
-
-      if (error) throw error;
-
-      setSpots(data.map(spot => ({
-        id: spot.id,
-        location: spot.location_preview,
-        price: spot.price,
-        available: spot.available ?? true,
-        coordinates: typeof spot.coordinates === 'string' 
-          ? JSON.parse(spot.coordinates) 
-          : spot.coordinates
-      })));
-    } catch (error) {
-      console.error('Error fetching spots:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load parking spots",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getLocationName = async (lat: number, lng: number): Promise<string> => {
     const accessToken = 'pk.eyJ1Ijoia2F1c2hpa2RyIiwiYSI6ImNtNW1yNHlqbDAzOTYya3E2MWI3ajBkZzYifQ.rX-4rgYQIUsBrJP8gU0IcA';
@@ -70,60 +30,18 @@ const Marketplace = () => {
     }
   };
 
-  const handleSpotPurchase = async (spotId: number) => {
-    if (!userId) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to purchase spots",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error: purchaseError } = await supabase
-        .from('spot_purchases')
-        .insert([
-          { spot_id: spotId, user_id: userId }
-        ]);
-
-      if (purchaseError) throw purchaseError;
-
-      // Update spot availability
-      const { error: updateError } = await supabase
-        .from('parking_spots')
-        .update({ available: false })
-        .eq('id', spotId);
-
-      if (updateError) throw updateError;
-
+  const handleSpotPurchase = (spotId: number) => {
+    const spot = spots.find(s => s.id === spotId);
+    if (spot && spot.available) {
+      purchaseSpot(spotId);
       toast({
         title: "Success!",
         description: "Parking spot purchased successfully.",
       });
-
-      // Refresh spots list
-      fetchSpots();
-    } catch (error) {
-      console.error('Error purchasing spot:', error);
-      toast({
-        title: "Error",
-        description: "Failed to purchase spot. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
-  const addCurrentLocationSpot = async () => {
-    if (!userId) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to add spots",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const addCurrentLocationSpot = () => {
     if (!navigator.geolocation) {
       toast({
         title: "Error",
@@ -142,34 +60,20 @@ const Marketplace = () => {
         
         const locationName = await getLocationName(coordinates.lat, coordinates.lng);
         
-        try {
-          const { error } = await supabase
-            .from('parking_spots')
-            .insert([{
-              location_preview: locationName,
-              full_address: locationName,
-              price: price,
-              available: true,
-              coordinates: coordinates
-            }]);
+        const newSpot = {
+          id: Date.now(),
+          location: locationName,
+          price,
+          available: true,
+          coordinates
+        };
 
-          if (error) throw error;
-
-          toast({
-            title: "Success",
-            description: "New parking spot added at your current location!",
-          });
-
-          // Refresh spots list
-          fetchSpots();
-        } catch (error) {
-          console.error('Error adding spot:', error);
-          toast({
-            title: "Error",
-            description: "Failed to add parking spot. Please try again.",
-            variant: "destructive",
-          });
-        }
+        addSpot(newSpot);
+        
+        toast({
+          title: "Success",
+          description: "New parking spot added at your current location!",
+        });
       },
       (error) => {
         toast({
