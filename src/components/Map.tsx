@@ -24,7 +24,7 @@ const formatLocation = (location: string) => {
     // Get the street name without number
     const streetPart = parts[0];
     // Updated regex to better match street numbers
-    const streetNameMatch = streetPart.match(/^(\d+\s*-?\s*\d*\s+)?(.+)/);
+    const streetNameMatch = streetPart.match(/^(\d+(?:\s*-?\s*\d*)*\s+)?(.+)/);
     const streetName = streetNameMatch ? streetNameMatch[2] : streetPart;
     
     // Return only street name and remaining parts (city, state, zip)
@@ -33,14 +33,14 @@ const formatLocation = (location: string) => {
   return location;
 };
 
-const Map = ({ 
+const Map: React.FC<MapProps> = ({ 
   center = [-74.5, 40], 
   zoom = 9, 
   interactive = true,
   className = "",
   spots = [],
   onMarkerClick
-}: MapProps) => {
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
