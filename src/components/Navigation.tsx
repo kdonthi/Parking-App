@@ -26,6 +26,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [purchasedSpots, setPurchasedSpots] = useState<PurchasedSpot[]>([]);
   
   const tabs = [
@@ -36,12 +37,16 @@ const Navigation = () => {
   ];
   
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    setUserId(storedUserId);
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUserId(session.user.id);
+        setUserEmail(session.user.email);
+        fetchPurchasedSpots(session.user.id);
+      }
+    };
     
-    if (storedUserId) {
-      fetchPurchasedSpots(storedUserId);
-    }
+    checkUser();
   }, []);
 
   const fetchPurchasedSpots = async (userId: string) => {
@@ -81,9 +86,11 @@ const Navigation = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userId');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUserId(null);
+    setUserEmail(null);
+    setPurchasedSpots([]);
     navigate('/auth');
     toast({
       title: "Success",
@@ -120,7 +127,7 @@ const Navigation = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="mr-4">
-                      <span className="text-primary font-medium">{userId}</span>
+                      <span className="text-primary font-medium">{userEmail}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-96">
