@@ -5,6 +5,7 @@ interface ParkingSpot {
   location: string;
   price: number;
   available: boolean;
+  owner: string;
   coordinates: {
     lat: number;
     lng: number;
@@ -25,6 +26,7 @@ export const useParkingSpotsStore = create<ParkingSpotsState>((set) => ({
       location: "123 Main St, San Francisco",
       price: 10,
       available: true,
+      owner: "user1",
       coordinates: { lat: 37.7749, lng: -122.4194 }
     },
     {
@@ -32,6 +34,7 @@ export const useParkingSpotsStore = create<ParkingSpotsState>((set) => ({
       location: "456 Market St, San Francisco",
       price: 15,
       available: true,
+      owner: "user2",
       coordinates: { lat: 37.7897, lng: -122.4000 }
     }
   ],
