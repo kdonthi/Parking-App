@@ -30,7 +30,7 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({ spot, onPurchase }) =
       <div className="mb-4 h-[150px] rounded-lg overflow-hidden">
         <Map 
           center={[spot.coordinates.lng, spot.coordinates.lat]}
-          zoom={15}
+          zoom={10} 
           interactive={false}
           className="w-full h-full"
           spots={[spot]}
