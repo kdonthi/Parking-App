@@ -59,23 +59,23 @@ const Map: React.FC<MapProps> = ({
       preserveDrawingBuffer: true
     });
 
+    map.current = mapInstance;
+
     if (interactive) {
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
     }
 
     parkingSpots.filter(s => s.available).map(s => s.coordinates).forEach(({lat, lng}) => {
-      console.log(lat, lng);
       new mapboxgl.Marker()
         .setLngLat([lng, lat])
         .addTo(mapInstance);
-      map.current = mapInstance;
-    })
-
+    });
+    
     return () => {
       markers.current.forEach(marker => marker.remove());
       mapInstance.remove();
     };
-  }, [zoom, interactive]);
+  }, [zoom, interactive, parkingSpots]);
 
   useEffect(() => {
     if (!map.current) return;
