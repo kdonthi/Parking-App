@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useParkingSpotsStore } from '@/store/parkingSpots';
 
 interface MapProps {
   center?: [number, number];
@@ -34,8 +35,7 @@ const formatLocation = (location: string) => {
 };
 
 const Map: React.FC<MapProps> = ({ 
-  center = [-74.5, 40], 
-  zoom = 9, 
+  zoom = 3, 
   interactive = true,
   className = "",
   spots = [],
@@ -44,6 +44,7 @@ const Map: React.FC<MapProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const parkingSpots = useParkingSpotsStore((state) => state.spots);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -53,7 +54,6 @@ const Map: React.FC<MapProps> = ({
     const mapInstance = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: center,
       zoom: zoom,
       interactive: interactive,
       preserveDrawingBuffer: true
@@ -63,19 +63,19 @@ const Map: React.FC<MapProps> = ({
       mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
     }
 
-    if (spots.length === 0) {
+    parkingSpots.filter(s => s.available).map(s => s.coordinates).forEach(({lat, lng}) => {
+      console.log(lat, lng);
       new mapboxgl.Marker()
-        .setLngLat(center)
+        .setLngLat([lng, lat])
         .addTo(mapInstance);
-    }
-
-    map.current = mapInstance;
+      map.current = mapInstance;
+    })
 
     return () => {
       markers.current.forEach(marker => marker.remove());
       mapInstance.remove();
     };
-  }, [center, zoom, interactive]);
+  }, [zoom, interactive]);
 
   useEffect(() => {
     if (!map.current) return;

@@ -20,6 +20,7 @@ interface AddSpotFormProps {
 const AddSpotForm: React.FC<AddSpotFormProps> = ({ onSpotAdded }) => {
   const [price, setPrice] = useState<number>(10);
   const { toast } = useToast();
+  const userId = localStorage.getItem("userId");
 
   const addCurrentLocationSpot = () => {
     if (!navigator.geolocation) {
@@ -45,7 +46,9 @@ const AddSpotForm: React.FC<AddSpotFormProps> = ({ onSpotAdded }) => {
           location: locationName,
           price,
           available: true,
-          coordinates
+          coordinates,
+          owner: userId,
+          buyer: "",
         };
 
         onSpotAdded(newSpot);
