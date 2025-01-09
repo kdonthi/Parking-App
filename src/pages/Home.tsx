@@ -55,7 +55,7 @@ const Home = () => {
           {spots.map((spot) => (
             <Card key={spot.id}>
               <CardHeader>
-                <CardTitle className="text-lg">{spot.location}</CardTitle>
+                <CardTitle className="text-lg">{spot.location.replace(/^\d+\s*/, '')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">{spot.price} tokens</p>

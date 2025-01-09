@@ -25,7 +25,7 @@ const ParkingSpotCard: React.FC<ParkingSpotCardProps> = ({ spot, onPurchase }) =
           {spot.available ? 'Available' : 'Taken'}
         </span>
       </div>
-      <h3 className="text-lg font-semibold mb-2">{spot.location}</h3>
+      <h3 className="text-lg font-semibold mb-2">{spot.location.replace(/^\d+\s*/, '')}</h3>
       <p className="text-gray-600 mb-4">{spot.price} tokens</p>
       <div className="mb-4 h-[150px] rounded-lg overflow-hidden">
         <Map 

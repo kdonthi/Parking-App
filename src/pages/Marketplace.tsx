@@ -47,8 +47,6 @@ const Marketplace = () => {
         description: "Parking spot purchased successfully.",
       });
     }
-    
-    console.log(spot.buyer, userId, user);
 
   };
 
