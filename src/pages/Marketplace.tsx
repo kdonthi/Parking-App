@@ -25,6 +25,15 @@ const Marketplace = () => {
         });
         return;
       }
+
+      if (spot.owner == user.owner) {
+        toast({
+          title: "Error",
+          description: "Dis your spot lol",
+          variant: "destructive",
+        });
+        return;
+      }
     
       purchaseSpot(spotId, userId);
       

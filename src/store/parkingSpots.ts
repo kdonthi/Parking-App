@@ -100,5 +100,5 @@ export const useParkingSpotsStore = create(persist<ParkingSpotsState>(
         )
       })),
   }),
-  {name: "parking-state"}  
+  {name: "parkingSpotsStorage"}  
 ));

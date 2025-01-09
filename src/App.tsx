@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
@@ -8,6 +9,20 @@ import Tokens from './pages/Tokens';
 import { Toaster } from './components/ui/toaster';
 
 const App = () => {
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.removeItem('userId'); // Remove the userId from localStorage
+      localStorage.removeItem('userStorage'); // Remove user data if stored
+      localStorage.removeItem('parkingSpotsStorage'); // Remove spots data if stored
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   return (
     <Router>
       <Navigation />
