@@ -63,7 +63,7 @@ export const useUsersStore = create(persist<UsersState>(
         })
       }))
   }),
-  {name: "users-storage"}
+  {name: "userStorage"}
 ));
 
 

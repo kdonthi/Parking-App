@@ -4,51 +4,13 @@ import { useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
 import AddSpotForm from '@/components/marketplace/AddSpotForm';
 import ParkingSpotCard from '@/components/marketplace/ParkingSpotCard';
 import { useUserState } from '@/hooks/useUserState';
+import { useHandleSpotPurchase } from '@/utils/spotPurchase';
 
 const Marketplace = () => {
   const spots = useParkingSpotsStore((state) => state.spots);
   const addSpot = useParkingSpotsStore((state) => state.addSpot);
-  const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
   const { userId } = useUserState();
-  const { toast } = useToast();
-
-  const users = useUsersStore((state) => state.users);
-  const user = users.find(u => u.owner === userId);
-  const handleSpotPurchase = (spotId: number) => {
-    const spot = spots.find(s => s.id === spotId);
-    if (spot && spot.available) {
-      if (spot.price > user.tokens) {
-        toast({
-          title: "Error",
-          description: "Insufficient tokens to purchase this spot.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (spot.owner == user.owner) {
-        toast({
-          title: "Error",
-          description: "Dis your spot lol",
-          variant: "destructive",
-        });
-        return;
-      }
-    
-      purchaseSpot(spotId, userId);
-      
-      const owner =  users.find(u => u.owner === spot.owner);
-      spot.buyer = user.owner;
-      user.tokens -= spot.price;
-      owner.tokens += spot.price
-      
-      toast({
-        title: "Success!",
-        description: "Parking spot purchased successfully.",
-      });
-    }
-
-  };
+  const handleSpotPurchase = useHandleSpotPurchase();
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
@@ -63,7 +25,7 @@ const Marketplace = () => {
           <ParkingSpotCard
             key={spot.id}
             spot={spot}
-            onPurchase={handleSpotPurchase}
+            onPurchase={() => handleSpotPurchase(spot.id)}
           />
         ))}
       </div>

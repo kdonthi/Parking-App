@@ -5,40 +5,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
 import { useUserState } from '@/hooks/useUserState';
+import { useHandleSpotPurchase } from '@/utils/spotPurchase';
 
 const Home = () => {
   const spots = useParkingSpotsStore((state) => state.spots);
   const users = useUsersStore((store) => store.users);
-
-  const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
-  const { userId } = useUserState();
-  const { toast } = useToast();
-  const user = users.find(u => u.owner === userId);
-  
-  const handleSpotPurchase = (spotId: number) => {
-    const spot = spots.find(s => s.id === spotId);
-    if (spot && spot.available) {
-      toast({
-        title: "Confirm Purchase",
-        description: `Would you like to purchase this spot at ${spot.location} for ${spot.price} tokens?`,
-        action: (
-          <Button
-            onClick={() => {
-              purchaseSpot(spotId, userId);
-              
-              toast({
-                title: "Success!",
-                description: "Parking spot purchased successfully.",
-              });
-            }}
-          >
-            Purchase
-          </Button>
-        ),
-      });
-    console.log(spot.buyer, userId, user.tokens);
-    }
-  };
+  const handleSpotPurchase = useHandleSpotPurchase();
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in">
@@ -48,7 +20,7 @@ const Home = () => {
           <Map 
             spots={spots} 
             className="w-full h-full rounded-lg"
-            onMarkerClick={handleSpotPurchase}
+            onMarkerClick={(spotId) => handleSpotPurchase(spotId)}
           />
         </div>
         <div className="space-y-4">
