@@ -3,22 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useUsersStore } from '@/store/parkingSpots';
 
 const Auth = () => {
   const [userId, setUserId] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const addUser = useUsersStore(state => state.addUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (userId.trim()) {
-      localStorage.setItem('userId', userId);
+    const trimmedUserId = userId.trim();
+
+    if (trimmedUserId) {
+      localStorage.setItem('userId', trimmedUserId);
       
       toast({
         title: "Success",
         description: "Logged in successfully",
       });
+
+      addUser(trimmedUserId);      
       
       navigate('/');
     } else {

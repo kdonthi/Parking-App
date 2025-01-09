@@ -1,6 +1,6 @@
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useParkingSpotsStore } from '@/store/parkingSpots';
+import { useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
 import AddSpotForm from '@/components/marketplace/AddSpotForm';
 import ParkingSpotCard from '@/components/marketplace/ParkingSpotCard';
 import { useUserState } from '@/hooks/useUserState';
@@ -12,15 +12,35 @@ const Marketplace = () => {
   const { userId } = useUserState();
   const { toast } = useToast();
 
+  const users = useUsersStore((state) => state.users);
+  const user = users.find(u => u.owner === userId);
   const handleSpotPurchase = (spotId: number) => {
     const spot = spots.find(s => s.id === spotId);
-    if (spot && spot.available) { 
+    if (spot && spot.available) {
+      if (spot.price > user.tokens) {
+        toast({
+          title: "Error",
+          description: "Insufficient tokens to purchase this spot.",
+          variant: "destructive",
+        });
+        return;
+      }
+    
       purchaseSpot(spotId, userId);
+      
+      const owner =  users.find(u => u.owner === spot.owner);
+      spot.buyer = user.owner;
+      user.tokens -= spot.price;
+      owner.tokens += spot.price
+      
       toast({
         title: "Success!",
         description: "Parking spot purchased successfully.",
       });
     }
+    
+    console.log(spot.buyer, userId, user);
+
   };
 
   return (

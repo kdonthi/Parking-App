@@ -3,15 +3,18 @@ import Map from '../components/Map';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { useParkingSpotsStore } from '@/store/parkingSpots';
+import { useParkingSpotsStore, useUsersStore } from '@/store/parkingSpots';
 import { useUserState } from '@/hooks/useUserState';
 
 const Home = () => {
   const spots = useParkingSpotsStore((state) => state.spots);
+  const users = useUsersStore((store) => store.users);
+
   const purchaseSpot = useParkingSpotsStore((state) => state.purchaseSpot);
   const { userId } = useUserState();
   const { toast } = useToast();
-
+  const user = users.find(u => u.owner === userId);
+  
   const handleSpotPurchase = (spotId: number) => {
     const spot = spots.find(s => s.id === spotId);
     if (spot && spot.available) {
@@ -22,6 +25,7 @@ const Home = () => {
           <Button
             onClick={() => {
               purchaseSpot(spotId, userId);
+              
               toast({
                 title: "Success!",
                 description: "Parking spot purchased successfully.",
@@ -32,6 +36,7 @@ const Home = () => {
           </Button>
         ),
       });
+    console.log(spot.buyer, userId, user.tokens);
     }
   };
 
